@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Summary</title>
+    <link rel="stylesheet" href="/static/style11.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="background"></div>
+  <header class="header">
+      <h2 class="logo">Welcome {{ name }}</h2>  
+      <nav class="navbar">
+          <a href="{{ url_for('admin_dashboard', admin_email=name) }}">Home</a>
+          <a href="{{ url_for('admin_search', admin_email=name) }}">Search</a>
+          <a href="{{ url_for('admin_summary', session_email=name) }}">Summary</a>
+          <a href="/logout">Logout</a>
+      </nav>
+  </header>
+
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+
+  <script>
+    const labels = JSON.parse(`{{ labels | tojson | safe }}`);  
+    const data = JSON.parse(`{{ data | tojson | safe }}`);      
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Number Of Ratings',
+          data: data,
+          borderWidth: 1,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',  
+          borderColor: 'rgba(75, 192, 192, 1)'        
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

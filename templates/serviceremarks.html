@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Remarks</title>
+    <link href="/static/style7.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.1.2/dist/css/coreui.min.css" rel="stylesheet" integrity="sha384-lBISJVJ49zh34fnUuAaSAyuYzQ2ioGvhm4As4Z1JFde0kVpaC1FFWD3f9adpZrdD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.1.2/dist/js/coreui.bundle.min.js" integrity="sha384-yoEOGIfJg9mO8eOS9dgSYBXwb2hCCE+AMiJYavhAofzm8AoyVE241kjON695K1v5" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="remarks-container">
+        <h2 class="text-center">Service Remarks</h2>
+
+        <p class="text-center">Request ID: {{ service_request.id }}</p>
+        <form action="{{ url_for('add_service_remarks', service_request_id=service_request.id) }}" method="POST"> 
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="service-name" class="form-label">Service Name</label>
+                    <input type="text" id="service-name" name="service_name" class="form-control" placeholder="Service Name" value="{{ service_request.service.service_name }}" required>
+                </div>
+                <div class="col">
+                    <label for="service-date" class="form-label">Date</label>
+                    <input type="text" id="service-date" name="service_date" class="form-control" placeholder="dd/mm/yyyy" value="{{ service_request.date_of_request.strftime('%d/%m/%Y') if service_request.date_of_request else '' }}" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="professional-id" class="form-label">Professional ID</label>
+                    <input type="text" id="professional-id" name="professional_id" class="form-control" placeholder="Professional ID" value="{{ service_request.professional_id }}" required>
+                </div>
+                <div class="col">
+                    <label for="professional-name" class="form-label">Professional Name</label>
+                    <input type="text" id="professional-name" name="professional_name" class="form-control" placeholder="Professional Name" value="{{ service_request.professional.fullname }}" required>
+                </div>
+                <div class="col">
+                    <label for="professional-contact" class="form-label">Contact No.</label>
+                    <input type="text" id="professional-contact" name="professional_contact" class="form-control" placeholder="Contact No." value="{{ service_request.professional.phone_number }}" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label for="service-rating" class="form-label">Service Rating</label>
+                <div class="star-rating">
+                    <input type="radio" id="5-stars" name="rating" value="5" required>
+                    <label for="5-stars" class="star">&#9733;</label>
+                    <input type="radio" id="4-stars" name="rating" value="4" required>
+                    <label for="4-stars" class="star">&#9733;</label>
+                    <input type="radio" id="3-stars" name="rating" value="3" required>
+                    <label for="3-stars" class="star">&#9733;</label>
+                    <input type="radio" id="2-stars" name="rating" value="2" required>
+                    <label for="2-stars" class="star">&#9733;</label>
+                    <input type="radio" id="1-star" name="rating" value="1" required>
+                    <label for="1-star" class="star">&#9733;</label>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="remarks" class="form-label">Remarks (if any):</label>
+                    <textarea id="remarks" name="remarks" class="form-control" rows="4" placeholder="Enter remarks here"></textarea>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary me-2">Submit</button>
+                <button type="button" class="btn btn-secondary" id="backButton">Back</button>
+            </div>
+        </form>
+    </div>
+<script>
+document.getElementById('backButton').addEventListener('click', function() {
+    history.back();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style3.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <title>Admin Dashboard</title>
+
+</head>
+<body>
+  <div class="background"></div>
+    <header class="header">
+        <h2 class="logo">Welcome {{name}}</h2>  
+        <nav class="navbar">
+            <a href="{{ url_for('admin_dashboard', admin_email=name) }}">Home</a>
+            <a href="{{ url_for('admin_search', admin_email=name) }}">Search</a>
+            <a href="{{ url_for('admin_summary', session_email=name) }}">Summary</a>
+            <a href="/logout">Logout</a>
+        </nav>
+        
+    </header>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
+        {{ message }}
+      </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div class="temp">
+      <table class="table table1">
+        <h3 class="t1hd">Services</h3>
+          <thead>
+            <tr class="table-primary">
+              <th scope="col">ID</th>
+              <th scope="col">Service Name</th>
+              <th scope="col">Base Price</th>
+              <th scope="col">Action</th>
+            </tr>  
+          </thead>
+          <tbody>
+            {% for service in service_info %}
+            <tr>
+              <td>{{service.id}}</td>
+              <td>{{service.service_name}}</td>
+              <td>{{service.service_price}}</td>
+              <td>
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editServiceModal{{service.id}}">Edit</button>
+                <form action="{{ url_for('delete_service', id=service.id) }}" method="POST" style="display: inline;">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+        {% for service in service_info %}
+        <div class="modal fade" id="editServiceModal{{service.id}}" tabindex="-1" aria-labelledby="editServiceModalLabel{{service.id}}" aria-hidden="true">
+          <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="editServiceModalLabel{{service.id}}">Edit Service</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                      <form action="{{ url_for('edit_service', id=service.id) }}" method="POST">
+                          <div class="mb-3">
+                              <label for="servicename{{service.id}}" class="form-label">Service Name:</label>
+                              <input type="text" name="servicename" id="servicename{{service.id}}" class="form-control" value="{{service.service_name}}" required>
+                          </div>
+                          <div class="mb-3">
+                              <label for="description{{service.id}}" class="form-label">Description:</label>
+                              <input type="text" name="description" id="description{{service.id}}" class="form-control" value="{{service.description}}" >
+                          </div>
+                          <div class="mb-3">
+                              <label for="baseprice{{service.id}}" class="form-label">Base Price:</label>
+                              <input type="number" name="baseprice" id="baseprice{{service.id}}" class="form-control" value="{{service.service_price}}" required>
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="submit" class="btn btn-primary">Save</button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
+        </div>
+        {% endfor %}
+        
+        <a class="wrapper1" href="/addservice">
+            <button type="submit" class="btn1">Add Service</button>
+        </a>
+        <br>
+        <table class="table">
+          <h3>Professional</h3>
+          <thead>
+            <tr class="table-primary">
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Experience(in yrs)</th>
+              <th scope="col">Service Name</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for professional in professional_info %}
+            <tr>
+              <td>{{professional.id}}</td>
+              <td>{{professional.fullname}}</td>
+              <td>{{professional.experience}}</td>
+              <td>{{professional.service_name}}</td>
+              <td>
+                  <form action="{{ url_for('professional_document', id=professional.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-info">Document</button>
+                </form>
+                <form action="{{ url_for('approve_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-success">Approve</button>
+              </form>
+              <form action="{{ url_for('reject_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-warning">Reject</button>
+              </form>
+              <form action="{{ url_for('block_user', id=professional.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-secondary">Block</button>
+              </form>
+                <form action="{{ url_for('delete_professional', id=professional.id) }}" method="POST" style="display: inline;">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <br></br>
+          <table class="table">
+              <h3 class="t2hd">Service History</h3>
+              <thead>
+                  <tr class="table-primary">
+                      <th scope="col">ID</th>
+                      <th scope="col">Service Name</th>
+                      <th scope="col">Professional Name</th>
+                      <th scope="col">Phone Number</th>
+                      <th scope="col">Status</th>
+                  </tr>  
+              </thead>
+              <tbody>
+                {% for request in service_request %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.service.service_name }}</td>
+                    <td>{{ request.professional.fullname }}</td>
+                    <td>{{ request.professional.phone_number }}</td>
+                    <td>{{ request.service_status }}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+            </table>  
+     
+</body>
+
+</html>

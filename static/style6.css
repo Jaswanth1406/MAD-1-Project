@@ -1,0 +1,182 @@
+*{
+    margin : 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family : 'Poppins', sans-serif;
+}
+
+body{
+    min-height: 100vh;  
+}
+
+.background{
+    width: 100%;
+    height: 100%;
+    background-image: url('/static/images/admin_image.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: fixed;
+    z-index: -1;
+}
+/* Container for cards */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+    align-items: center;
+}
+
+/* Navbar styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: black;
+    padding: 10px 20px;
+}
+
+.header{
+    font-size: 1.5rem;
+    color: white;
+    font-weight: bold;
+}
+
+.logo{
+    font-size: 80%;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    right: 300px;
+    position: relative;
+}
+
+
+.navbar a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    font-size: 1.2rem;
+}
+
+.navbar a:hover {
+    color: blue;
+}
+
+/* Card styles */
+.card {
+    width: 18rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 15px;
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    background-color: #f0f0f0;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    font-size: 1rem;
+    color: #555;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.temp{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.table{    
+    height: auto;
+    border-collapse: collapse;      
+    border: 1px solid black;
+    text-align: center;
+    max-width: 75%;
+
+}
+.table1{
+    margin-top: 190px;
+}
+
+.table-container {
+         
+    max-height: 200px;       
+    overflow-y: auto;        
+    border: 1px solid black; 
+    max-width: 80%;          
+    margin: 0 auto;  
+    padding-top: 20px;        
+}
+
+.t1hd{
+    position: relative;
+    top: 190px;
+}
+.close-btn {
+    background-color: #ff6666;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    background-color: #cc0000;
+}
+
+.profile-pic{
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .temp, .temp * {
+        visibility: visible;
+    }
+    .temp {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .btn {
+        display: none;
+    }
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style6.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+    <title>Customer Home</title>
+
+</head>
+<body>
+  <div class="background"></div>
+  <header class="header">
+    <div class = "profile-pic"> <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed={{customer_info.fullname}}">  </div>
+    <h2 class="logo">Welcome {{name}}</h2>  
+    <nav class="navbar">
+        <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
+        <a href="{{ url_for('customer_profile') }}">Profile</a>
+        <a href="{{ url_for('customer_search', customer_email=name) }}">Search</a>
+        <a href="#">Summary</a>
+        <a href="/logout">Logout</a>
+    </nav>
+</header>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+  <div class="alert alert-primary" role="alert" style="position: absolute;top: 12%;width: 100%;">
+    {{ message }}
+  </div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<div class="card-container">
+  {% if service_info %} 
+    {% for service in service_info %}
+    <div class="card">
+      <img src="{{ url_for('static', filename='images/' + service.service_name + '.jpg') }}"
+        class="card-img-top" alt="{{ service.service_name }}">
+        <div class="card-body">
+            <h5 class="card-title">{{ service.service_name }}</h5>
+            <p class="card-text">{{ service.service_description }}</p>
+            <a href="{{ url_for('service_details', id=service.id) }}" class="btn btn-primary">Service Details</a>
+            {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'danger' %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}        
+        </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div><h3>No Services Available</h3></div>
+  {% endif %}
+</div>
+<div class="temp">
+  <table class="table">
+      <h3 class="t2hd">Service History</h3>
+      <thead>
+          <tr class="table-primary">
+              <th scope="col">ID</th>
+              <th scope="col">Service Name</th>
+              <th scope="col">Professional Name</th>
+              <th scope="col">Phone Number</th>
+              <th scope="col">Status</th>
+              <th scope="col">Status</th>
+          </tr>  
+      </thead>
+      <tbody>
+        {% for request in service_request %}
+          <tr>
+              <td>{{ request.id }}</td>
+              <td>{{ request.service.service_name }}</td>
+              <td>{{ request.professional.fullname }}</td>
+              <td>{{ request.professional.phone_number }}</td>
+              <td>{{ request.service_status }}</td>
+              <td>                
+                <form action="{{ url_for('service_remarks', service_request_id=request.id) }}" method="POST" style="display: inline;" onsubmit="disableButton(this)">
+                    <button type="submit" class="btn btn-primary" >Close</button>
+                </form>
+            </td>
+          </tr>
+           
+          {% else %}
+          <tr>
+              <td colspan="6" class="text-center">No service history available.</td>
+          </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>      
+  </tbody>
+</table>
+</div>  
+<button class="btn btn-primary" onclick="window.print();">
+  <i class="bi bi-printer-fill"></i>
+  Print
+</button>
+<a href="{{url_for('customer_export')}}" class="btn btn-primary">
+  <i class="bi bi-filetype-csv"></i>
+  Export 
+</a>
+
+
+</body>
+</html>

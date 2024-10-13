@@ -1,0 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url('/static/images/images.png') no-repeat center center; 
+    background-size: cover;
+    padding: 20px;
+}
+
+.wrapper1 {
+    width: fit-content;
+    background: rgba(255,255,255,.1);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255,255,255,.2);
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0,0,0,.2);
+  
+}
+.aa{
+    width: fit-content;
+    display: flex;
+    justify-content: center;
+    column-gap: 50px;
+    height: fit-content;
+}
+.wrapper1 h1 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 30px;
+    color: black;
+    width: 100%;
+}
+
+.input-field {
+    position: relative;
+    margin-bottom: 20px;
+    width: fit-content;
+}
+
+.input-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: black;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 10px 35px 10px 15px;
+    border: 1px solid black;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    color: black;
+}
+
+.input-field input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.input-field i {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    color: black;
+}
+
+.btn1 {
+    width: 100%;
+    height: 45px;
+    background: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    color: black;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.btn1:hover {
+    background: red;
+}
+
+.wrapper1 .register-link2{
+    font-size: 14.5px;
+    text-align: center;
+    margin: 20px 0 15px;
+}
+
+.register-link2 p a{
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link2 p a:hover{
+    text-decoration: underline;
+}
+
+
+@media (max-width: 480px) {
+    .wrapper1 {
+        border-radius: 0;
+    }
+}
