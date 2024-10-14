@@ -8,6 +8,15 @@
     <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.1.2/dist/css/coreui.min.css" rel="stylesheet" integrity="sha384-lBISJVJ49zh34fnUuAaSAyuYzQ2ioGvhm4As4Z1JFde0kVpaC1FFWD3f9adpZrdD" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.1.2/dist/js/coreui.bundle.min.js" integrity="sha384-yoEOGIfJg9mO8eOS9dgSYBXwb2hCCE+AMiJYavhAofzm8AoyVE241kjON695K1v5" crossorigin="anonymous"></script>
 </head>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+  <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
+    {{ message }}
+  </div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <body>
     <div class="remarks-container">
         <h2 class="text-center">Service Remarks</h2>

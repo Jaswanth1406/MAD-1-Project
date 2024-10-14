@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, session , send_file , make_response
+from flask import Flask, render_template, request, flash, session , send_file 
 from flask import current_app as app
 from flask import redirect, url_for
 from backend.models import *
@@ -28,9 +28,11 @@ def login():
 
        
         professional = Professional_Info.query.filter_by(email=email).first()
-        if professional and check_password_hash(professional.password, password):
+        if professional and check_password_hash(professional.password, password) and professional.status == 'Approved':
             session['professional_email'] = email
             return redirect(url_for('professional_dashboard', professional_email=professional.email))
+        else:
+            flash("Professional is not Approved")
 
         
         admin = Admin_Info.query.filter_by(email=email).first()
@@ -339,60 +341,90 @@ def customer_dashboard(customer_email=None):
 
 
 @app.route('/servicedetails/<int:id>', methods=["GET", "POST"])
-def service_details(id, customer_email=None):
+def service_details(id):
     customer_email = session.get('customer_email')
     if not customer_email:
         flash('Please log in to continue.', 'warning')
         return redirect(url_for('login'))
     
     customer = Customer_Info.query.filter_by(email=customer_email).first()
+    if not customer:
+        flash('Customer not found.', 'danger')
+        return redirect(url_for('login'))
 
-    service = Service_Info.query.filter_by(id=id).first()
-    service_requests = Service_Request.query.filter_by(customer_id=customer.id).all()
-
-    if service:
-        return render_template('service_details.html', services=service, service_requests=service_requests, name=customer_email)
-    else:
-        flash('Service not found!', 'danger')
+    service = Service_Info.query.get(id)
+    if not service:
+        flash(f'Service with ID {id} not found!', 'danger')
         return redirect(url_for('customer_dashboard', name=customer_email))
 
-@app.route('/book_service/<int:service_id>', methods=['POST'])
+
+    if not service.service_name:
+        flash('Service name not available.', 'warning')
+        return redirect(url_for('customer_dashboard'))
+    
+    service_requests = Service_Request.query.filter_by(customer_id=customer.id).all()
+
+    professionals = Professional_Info.query.filter_by(service_name=service.service_name, is_blocked=False).all()
+
+    if not professionals:
+        flash('No professionals available for this service', 'warning')
+        return redirect(url_for('customer_dashboard'))
+
+    return render_template('service_details.html', service=service, service_requests=service_requests, name=customer_email, professionals=professionals)
+
+
+@app.route('/book_service/<int:service_id>', methods=['GET', 'POST'])
 def book_service(service_id):
-        customer_email = session.get('customer_email')
-        if not customer_email:
-            flash('Please login to book a service', 'warning')
-            return redirect(url_for('login'))
+    customer_email = session.get('customer_email')
+    if not customer_email:
+        flash('Please login to book a service', 'warning')
+        return redirect(url_for('login'))
 
-        customer = Customer_Info.query.filter_by(email=customer_email).first()
-        service = Service_Info.query.get(service_id)
+    customer = Customer_Info.query.filter_by(email=customer_email).first()
+    if not customer:
+        flash('Customer not found.', 'danger')
+        return redirect(url_for('login'))
 
+    service = Service_Info.query.get(service_id)
+    if not service:
+        flash(f'Service with ID {service_id} not found', 'danger')
+        return redirect(url_for('customer_dashboard'))
 
-        if not service or not customer:
-            flash('Service or customer not found', 'danger')
+    professionals = Professional_Info.query.filter_by(service_name=service.service_name, is_blocked=False).all()
+
+    if not professionals:
+        flash('No professionals available for this service', 'warning')
+        return redirect(url_for('customer_dashboard'))
+
+    if request.method == 'POST':
+        selected_professional_id = request.form.get('professional_id')
+        selected_professional = Professional_Info.query.get(selected_professional_id)
+
+        if not selected_professional:
+            flash('Selected professional not found.', 'danger')
             return redirect(url_for('customer_dashboard'))
 
-        professional = Professional_Info.query.filter_by(service_name=service.service_name, is_blocked=False).first()
-
-        if not professional:
-            flash('No professional available for this service', 'warning')
-            return redirect(url_for('customer_dashboard'))
-
+        
         new_request = Service_Request(
             service_id=service.id,
             customer_id=customer.id,
-            professional_id=professional.id,
-            service_status='assigned', 
+            professional_id=selected_professional.id,
+            service_status='assigned',
             remarks="Service has been booked",
             date_of_request=datetime.now()
         )
 
+
         db.session.add(new_request)
         db.session.commit()
 
-        flash(f'Service booked successfully! Assigned professional: {professional.fullname}', 'success')
+        flash(f'Service booked successfully! Assigned professional: {selected_professional.fullname}', 'success')
+        return redirect(url_for('customer_dashboard', name=customer_email))
+
+    return render_template('book_service.html', service=service, professionals=professionals)
 
 
-        return redirect(url_for('customer_dashboard',name=customer_email))
+
 
 
 @app.route('/service_remarks/<int:service_request_id>', methods=['GET', 'POST'])
@@ -408,37 +440,45 @@ def service_remarks(service_request_id):
 
 @app.route('/add_service_remarks/<int:service_request_id>', methods=["POST"])
 def add_service_remarks(service_request_id):
-    session_email = session.get('customer_email')  
+    session_email = session.get('customer_email')
     service_request = Service_Request.query.filter_by(id=service_request_id).first()
 
-    if service_request:
-        if service_request.service_status != 'Accepted':
-            flash('Service request must be in Accepted status to add remarks.', 'danger')
-            return redirect(url_for('customer_dashboard', email=session_email))
-        elif service_request.service_status == 'Closed':
-            flash('Service request is already closed; remarks cannot be added.', 'danger')
-            return redirect(url_for('customer_dashboard', email=session_email))
-            
+    if not service_request:
+        flash('Service request not found.', 'danger')
+        return redirect(url_for('customer_dashboard', email=session_email))
 
 
-        service_name = request.form.get('service_name')
-        service_date = request.form.get('service_date')
-        professional_id = request.form.get('professional_id')
-        professional_name = request.form.get('professional_name')
-        professional_contact = request.form.get('professional_contact')
-        rating = request.form.get('rating')
-        remarks = request.form.get('remarks', '')
+    if service_request.service_status != 'Accepted':
+        flash('Service request must be in Accepted status to add remarks.', 'danger')
+        return redirect(url_for('customer_dashboard', email=session_email))
 
-    
+    if service_request.service_status == 'Closed':
+        flash('Service request is already closed; remarks cannot be added.', 'danger')
+        return redirect(url_for('customer_dashboard', email=session_email))
 
 
-        try:
-            service_date = datetime.strptime(service_date, '%d/%m/%Y')
-        except ValueError:
-            flash('Invalid date format. Please use dd/mm/yyyy.', 'danger')
-            return redirect(url_for('service_details', id=service_request_id))
+    service_name = request.form.get('service_name')
+    service_date = request.form.get('service_date')
+    professional_id = request.form.get('professional_id')
+    professional_name = request.form.get('professional_name')
+    professional_contact = request.form.get('professional_contact')
+    rating = request.form.get('rating')
+    remarks = request.form.get('remarks',None)
 
 
+    if not all([service_name, service_date, professional_id, professional_name, professional_contact, rating]):
+        flash('All fields are required.', 'danger')
+        return redirect(url_for('service_details', id=service_request_id))
+
+
+    try:
+        service_date = datetime.strptime(service_date, '%d/%m/%Y')
+    except ValueError:
+        flash('Invalid date format. Please use dd/mm/yyyy.', 'danger')
+        return redirect(url_for('service_details', id=service_request_id))
+
+
+    try:
         new_remark = ServiceRemarks(
             service_id=service_request_id,
             service_name=service_name,
@@ -454,19 +494,16 @@ def add_service_remarks(service_request_id):
         service_request.date_of_completion = datetime.now()
         service_request.service_status = 'Closed'
 
-
         db.session.add(new_remark)
         db.session.commit()
 
         flash('Service remarks added successfully!', 'success')
         return redirect(url_for('service_details', id=service_request_id))
 
-    else:
-        flash('Service request not found.', 'danger')
-        return redirect(url_for('customer_dashboard', email=session_email))
-
-
-
+    except Exception as e:
+        db.session.rollback() 
+        flash(f'An error occurred: {str(e)}', 'danger')
+        return redirect(url_for('service_details', id=service_request_id))
 
 @app.route('/professional_dashboard')
 @app.route('/professional_dashboard/<string:professional_email>',  methods=["GET", "POST"])  
@@ -516,7 +553,7 @@ def approve_service(id):
         if service_request:
             service_request.service_status = 'Accepted'  
             db.session.commit()
-            flash(f"{service_request.fullname} has been approved!")
+            flash(f"Service has been approved!")
         else:
             flash("Service not found.")
     except Exception as e:
@@ -916,7 +953,7 @@ def customer_export(session_email=None):
     return redirect(url_for('static', filename='csv/' + filename))
 
 
-from flask import send_file
+
 
 @app.route('/professional_document/<int:id>', methods=['GET','POST']) 
 def professional_document(id):

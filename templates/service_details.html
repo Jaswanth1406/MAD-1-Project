@@ -40,23 +40,34 @@
                     <th scope="col">Description</th>
                     <th scope="col">Base Price</th>
                     <th scope="col">Action</th>
-                </tr>  
+                </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ services.id }}</td>
-                    <td>{{ services.service_name }}</td>
-                    <td>{{ services.service_description }}</td>
-                    <td>{{ services.service_price }}</td>
-                    <td>                
-                        <form action="{{ url_for('book_service', service_id=services.id) }}" method="POST" style="display: inline;">
-                            <button type="submit" class="btn btn-primary">Book</button>
+                    <td>{{ service.id }}</td>
+                    <td>{{ service.service_name }}</td>
+                    <td>{{ service.service_description }}</td>
+                    <td>{{ service.service_price }}</td>
+                    <td>
+                        <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST" style="display: inline;">
+                            <div>
+                                <label for="professionals">Select a Professional:</label>
+                                <select id="professionals" name="professional_id" required>
+                                    <option value="" disabled selected>Select Professional</option>
+                                    {% for professional in professionals %}
+                                        <option value="{{ professional.id }}">{{ professional.fullname }} ({{ professional.experience }} years experience)</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Book Service</button>
                         </form>
                     </td>
                 </tr>
             </tbody>
         </table>
-    </div>  
+    </div>
+    
+    
     <br>
     <div class="temp">
         <table class="table">
