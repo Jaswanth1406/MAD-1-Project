@@ -28,7 +28,7 @@ def login():
 
        
         professional = Professional_Info.query.filter_by(email=email).first()
-        if professional and check_password_hash(professional.password, password) and professional.status == 'Approved':
+        if professional and check_password_hash(professional.password, password):
             session['professional_email'] = email
             return redirect(url_for('professional_dashboard', professional_email=professional.email))
 
@@ -399,7 +399,7 @@ def book_service(service_id):
         flash(f'Service with ID {service_id} not found', 'danger')
         return redirect(url_for('customer_dashboard'))
 
-    professionals = Professional_Info.query.filter_by(service_name=service.service_name, is_blocked=False).all()
+    professionals = Professional_Info.query.filter_by(service_name=service.service_name, is_blocked=False, status = 'Approved').all()
 
     if not professionals:
         flash('No professionals available for this service', 'warning')

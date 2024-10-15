@@ -12,7 +12,6 @@
 <body>
     <div class="background"></div>
     <header class="header">
-      <div class = "profile-pic"> <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed={{customer_info.fullname}}">  </div>
       <h2 class="logo">Welcome {{name}}</h2>  
       <nav class="navbar">
           <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
