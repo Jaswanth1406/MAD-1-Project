@@ -33,6 +33,7 @@ class Professional_Info(db.Model):
     file_mimetype = db.Column(db.String(100))
     status = db.Column(db.String(50), default='Pending')
     is_blocked = db.Column(db.Boolean, default=False)
+    average_rating = db.Column(db.Float, nullable=True)
 
     service_requests = db.relationship(
         'Service_Request', backref='professional_info', cascade="all, delete-orphan"

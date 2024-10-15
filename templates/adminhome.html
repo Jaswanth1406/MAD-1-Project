@@ -22,15 +22,15 @@
         </nav>
         
     </header>
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
-        {{ message }}
-      </div>
-    {% endfor %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert" style="position: absolute;top: 12%;width: 100%;">
+          {{ message }}
+        </div>
+      {% endfor %}
     {% endif %}
-    {% endwith %}
+  {% endwith %}  
     <div class="temp">
       <table class="table table1">
         <h3 class="t1hd">Services</h3>
@@ -122,13 +122,13 @@
                   <button type="submit" class="btn btn-success">Approve</button>
               </form>
               <form action="{{ url_for('reject_professional', id=professional.id) }}" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-warning">Reject</button>
+                  <button type="submit" class="btn btn-danger">Reject</button>
               </form>
-              <form action="{{ url_for('block_user', id=professional.id) }}" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-secondary">Block</button>
+              <form action="{{ url_for('block_professional', id=professional.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-warning">Block</button>
               </form>
-                <form action="{{ url_for('delete_professional', id=professional.id) }}" method="POST" style="display: inline;">
-                  <button type="submit" class="btn btn-danger">Delete</button>
+                <form action="{{ url_for('unblock_professional', id=professional.id) }}" method="POST" style="display: inline;">
+                  <button type="submit" class="btn btn-primary">UnBlock</button>
                 </form>
               </td>
             </tr>

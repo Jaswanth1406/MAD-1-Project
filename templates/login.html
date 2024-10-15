@@ -15,15 +15,15 @@
             </a>
     </div>
     <div class="wrapper">
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-danger" role="alert">
-            {{ message }}
-          </div>
-        {% endfor %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
         {% endif %}
-        {% endwith %}
+      {% endwith %}      
         <form action="{{ url_for('login') }}" method="POST">
             <h1>A to Z HouseHold Services</h1>
             <div class="input-box">

@@ -12,24 +12,25 @@
 <body>
     <div class="background"></div>
     <header class="header">
-        <h2 class="logo">Welcome {{ name }}</h2>  
-        <nav class="navbar">
-            <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
-            <a href="{{ url_for('customer_profile') }}">Profile</a>
-            <a href="/adminsearch">Search</a>
-            <a href="#">Summary</a>
-            <a href="/logout">Logout</a>
-        </nav>
-    </header>
-    {% with messages = get_flashed_messages() %}
+      <div class = "profile-pic"> <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed={{customer_info.fullname}}">  </div>
+      <h2 class="logo">Welcome {{name}}</h2>  
+      <nav class="navbar">
+          <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
+          <a href="{{ url_for('customer_profile') }}">Profile</a>
+          <a href="{{ url_for('customer_search', customer_email=name) }}">Search</a>
+          <a href="#">Summary</a>
+          <a href="/logout">Logout</a>
+      </nav>
+  </header>
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
-        {{ message }}
-      </div>
-    {% endfor %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert" style="position: absolute;top: 12%;width: 100%;">
+          {{ message }}
+        </div>
+      {% endfor %}
     {% endif %}
-    {% endwith %}
+  {% endwith %}  
     <div class="temp">
         <table class="table table1">
             <h3 class="t1hd">Services</h3>
@@ -39,7 +40,6 @@
                     <th scope="col">Service Name</th>
                     <th scope="col">Description</th>
                     <th scope="col">Base Price</th>
-                    <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,26 +48,45 @@
                     <td>{{ service.service_name }}</td>
                     <td>{{ service.service_description }}</td>
                     <td>{{ service.service_price }}</td>
-                    <td>
-                        <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST" style="display: inline;">
-                            <div>
-                                <label for="professionals">Select a Professional:</label>
-                                <select id="professionals" name="professional_id" required>
-                                    <option value="" disabled selected>Select Professional</option>
-                                    {% for professional in professionals %}
-                                        <option value="{{ professional.id }}">{{ professional.fullname }} ({{ professional.experience }} years experience)</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Book Service</button>
-                        </form>
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
     
-    
+    <br>
+    <div class="temp">
+        <table class="table">
+            <h3 class="t2hd">Professionals</h3>
+            <thead>
+                <tr class="table-primary">
+                    <th scope="col">ID</th>
+                    <th scope="col">Professional Name</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">Ratings</th>
+                    <th scope="col">Action</th>
+                </tr>  
+            </thead>
+            <tbody>
+                {% for request in professionals %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.fullname }}</td>
+                        <td>{{ request.phone_number }}</td>
+                        <td>{{ request.average_rating }}</td> 
+                        <td>
+                            <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST" style="display: inline;">
+                                <input type="hidden" name="professional_id" value="{{ request.id }}">
+                                <button type="submit" class="btn btn-primary">Book Service</button>
+                            </form>
+                        </td>            
+                      </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No professional available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>  
     <br>
     <div class="temp">
         <table class="table">

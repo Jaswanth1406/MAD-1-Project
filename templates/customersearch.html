@@ -11,25 +11,27 @@
 <body>
     <div class="background"></div>
     <header class="header">
-        <h2 class="logo">Welcome {{ name }}</h2> 
-        <nav class="navbar">
-            <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
-            <a href="{{ url_for('customer_profile') }}">Profile</a>
-            <a href="{{ url_for('customer_search', customer_email=name) }}">Search</a>
-            <a href="#">Summary</a>
-            <a href="/logout">Logout</a>
-        </nav>
-    </header>
+      <div class = "profile-pic"> <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed={{customer_info.fullname}}">  </div>
+      <h2 class="logo">Welcome {{name}}</h2>  
+      <nav class="navbar">
+          <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
+          <a href="{{ url_for('customer_profile') }}">Profile</a>
+          <a href="{{ url_for('customer_search', customer_email=name) }}">Search</a>
+          <a href="#">Summary</a>
+          <a href="/logout">Logout</a>
+      </nav>
+  </header>
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
-        {{ message }}
-      </div>
-    {% endfor %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert" style="position: absolute;top: 12%;width: 100%;">
+          {{ message }}
+        </div>
+      {% endfor %}
     {% endif %}
-    {% endwith %}
+  {% endwith %}
+  
 
 
     <div class="container">
@@ -54,7 +56,7 @@
         </div>
       </div>
 
-      {% if service_info %}
+      {% if found_services and service_info %}
       <div class="temp">
           <table class="table table1">
               <h3 class="t1hd">Service Information</h3>
@@ -64,7 +66,6 @@
                       <th scope="col">Service Name</th>
                       <th scope="col">Description</th>
                       <th scope="col">Base Price</th>
-                      <th scope="col">Action</th>
                   </tr>
               </thead>
               <tbody>
@@ -74,11 +75,6 @@
                       <td>{{ service.service_name }}</td>
                       <td>{{ service.service_description }}</td>
                       <td>{{ service.service_price }}</td>
-                      <td>
-                          <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST" style="display: inline;">
-                              <button type="submit" class="btn btn-primary">Book</button>
-                          </form>
-                      </td>
                   </tr>
                   {% endfor %}
               </tbody>
@@ -99,23 +95,34 @@
                       <th scope="col">Experience</th>
                       <th scope="col">Location</th>
                       <th scope="col">Pin Code</th>
+                      <th scope="col">Phone Number</th>
+                      <th scope="col">Ratings</th>
                       <th scope="col">Action</th>
                   </tr>
               </thead>
               <tbody>
-                  {% for service in professional_info %}
-                  <tr>
-                      <td>{{ service.id }}</td>
-                      <td>{{ service.fullname }}</td>
-                      <td>{{ service.service_name }}</td>
-                      <td>{{ service.experience }}</td>
-                      <td>{{service.address}}</td>
-                      <td>{{service.pincode}}</td>
-                      <td>
-                          <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST" style="display: inline;">
-                              <button type="submit" class="btn btn-primary">Book</button>
-                          </form>
-                      </td>
+                <tbody>
+                    {% for professional in professional_info %}
+                        <tr>
+                            <td>{{ professional.id }}</td>
+                            <td>{{ professional.fullname }}</td>
+                            <td>{{ professional.service_name }}</td>
+                            <td>{{ professional.experience }}</td>
+                            <td>{{ professional.address }}</td>
+                            <td>{{ professional.pincode }}</td>
+                            <td>{{ professional.phone_number }}</td>
+                            <td>{{ professional.average_rating }}</td> 
+                            <td>
+                                <form action="{{ url_for('book_service', service_id=service.id if service else 0) }}" method="POST" style="display: inline;">
+                                    <input type="hidden" name="professional_id" value="{{ professional.id }}">
+                                    <button type="submit" class="btn btn-primary">Book Service</button>
+                                </form>
+                            </td>            
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No professionals available.</td>
+                        </tr>                     
                   </tr>
                   {% endfor %}
               </tbody>
@@ -125,39 +132,50 @@
         
       {% if closed_services %}
       <div class="temp">
-          <table class="table table1">
-              <h3 class="t1hd">Professional Information</h3>
-              <thead>
-                  <tr class="table-primary">
-                      <th scope="col">ID</th>
-                      <th scope="col">Full Name</th>
-                      <th scope="col">Service Name</th>
-                      <th scope="col">Experience</th>
-                      <th scope="col">Location</th>
-                      <th scope="col">Pin Code</th>
-                      <th scope="col">Action</th>
-                  </tr>
-              </thead>
+        <table class="table table1">
+            <h3 class="t1hd">Professional Information</h3>
+            <thead>
+                <tr class="table-primary">
+                    <th scope="col">ID</th>
+                    <th scope="col">Full Name</th>
+                    <th scope="col">Service Name</th>
+                    <th scope="col">Experience</th>
+                    <th scope="col">Location</th>
+                    <th scope="col">Pin Code</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">Ratings</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
               <tbody>
-                  {% for service in closed_services %}
-                  <tr>
-                      <td>{{ service.id }}</td>
-                      <td>{{ service.fullname }}</td>
-                      <td>{{ service.service_name }}</td>
-                      <td>{{ service.experience }}</td>
-                      <td>{{service.address}}</td>
-                      <td>{{service.pincode}}</td>
-                      <td>
-                          <form action="{{ url_for('book_service', service_id=service.id) }}" method="POST" style="display: inline;">
-                              <button type="submit" class="btn btn-primary">Book</button>
-                          </form>
-                      </td>
-                  </tr>
-                  {% endfor %}
-              </tbody>
-          </table>
-      </div>
-      {% endif %}
+                  {% for professional in closed_services %}
+                      <tr>
+                          <td>{{ professional.id }}</td>
+                          <td>{{ professional.fullname }}</td>
+                          <td>{{ professional.service_name }}</td>
+                          <td>{{ professional.experience }}</td>
+                          <td>{{ professional.address }}</td>
+                          <td>{{ professional.pincode }}</td>
+                          <td>{{ professional.phone_number }}</td>
+                          <td>{{ professional.average_rating }}</td> 
+                          <td>
+                            <form action="{{ url_for('book_service', service_id=service.id if service else 0) }}" method="POST" style="display: inline;">
+                                <input type="hidden" name="professional_id" value="{{ professional.id }}">
+                                <button type="submit" class="btn btn-primary">Book Service</button>
+                            </form>
+                        </td>
+                      </tr>
+                  {% else %}
+                      <tr>
+                          <td colspan="6" class="text-center">No professionals available.</td>
+                      </tr>                     
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 
 </body>
 </html>

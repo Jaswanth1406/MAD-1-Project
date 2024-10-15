@@ -21,17 +21,16 @@
         </nav>
     </header>
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-danger" role="alert" style="position: absolute;top: 12%;width: 100%;">
-        {{ message }}
-      </div>
-    {% endfor %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert" style="position: absolute;top: 12%;width: 100%;">
+          {{ message }}
+        </div>
+      {% endfor %}
     {% endif %}
-    {% endwith %}
-
-
+  {% endwith %}
+  
     <div class="container">
         <div class="row">
           <div class="col-md-12" style="margin-top: 100px;">
@@ -73,10 +72,10 @@
                     {% for request in closed_services %}
                         <tr>
                             <td>{{ request.id }}</td>
-                            <td>{{ request.service_request.customer.fullname }}</td>
-                            <td>{{ request.service_request.customer.phone_number }}</td>
-                            <td>{{ request.service_request.customer.address }}</td>
-                            <td>{{ request.service_request.customer.pincode }}</td>
+                            <td>{{ request.service_request_info.customer.fullname }}</td>
+                            <td>{{ request.service_request_info.customer.phone_number }}</td>
+                            <td>{{ request.service_request_info.customer.address }}</td>
+                            <td>{{ request.service_request_info.customer.pincode }}</td>
                             <td>{{ request.service_date.strftime('%Y-%m-%d') }}</td>
                             <td>{{ request.rating }}</td>
                         </tr>

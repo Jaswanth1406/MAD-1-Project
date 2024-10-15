@@ -22,7 +22,7 @@ def login():
 
         
         customer = Customer_Info.query.filter_by(email=email).first()
-        if customer and check_password_hash(customer.password, password):
+        if customer and check_password_hash(customer.password, password) and customer.is_blocked == False:
             session['customer_email'] = email
             return redirect(url_for('customer_dashboard', customer_email=customer.email))
 
@@ -31,16 +31,14 @@ def login():
         if professional and check_password_hash(professional.password, password) and professional.status == 'Approved':
             session['professional_email'] = email
             return redirect(url_for('professional_dashboard', professional_email=professional.email))
-        else:
-            flash("Professional is not Approved")
 
         
         admin = Admin_Info.query.filter_by(email=email).first()
         if admin:
             session['admin_email'] = email
             return redirect(url_for('admin_dashboard', admin_email=admin.email))
-
-        flash("Invalid login credentials")
+    
+        flash("Invalid login credentials","danger")
 
     return render_template('login.html')
 
@@ -58,7 +56,7 @@ def customerlogin():
         
         existing_user = Customer_Info.query.filter_by(email=email).first()
         if existing_user:
-            flash("Email already registered!")
+            flash("Email already registered!","warning")
             return render_template('create_account.html')
 
         password_hash = generate_password_hash(password)
@@ -68,7 +66,7 @@ def customerlogin():
         try:
             db.session.add(new_user)
             db.session.commit()
-            flash("Registration successful!")
+            flash("Registration successful!","success")
             return render_template("login.html")
         except Exception as e:
             db.session.rollback()
@@ -101,14 +99,14 @@ def professionallogin():
         
         existing_user = Professional_Info.query.filter_by(email=email).first()
         if existing_user:
-            flash("Email already registered!")
+            flash("Email already registered!","warning")
             return render_template('service_professional_setup.html')
 
         
         selected_service = Service_Info.query.filter_by(id=service_id).first()
 
         if not selected_service:
-            flash("Selected service is not valid!")
+            flash("Selected service is not valid!","info")
             return render_template('service_professional_setup.html')
 
         
@@ -128,7 +126,7 @@ def professionallogin():
         try:
             db.session.add(new_user)
             db.session.commit()
-            flash("Registration successful!")
+            flash("Registration successful!","success")
             return render_template("login.html")
         except Exception as e:
             db.session.rollback()
@@ -156,14 +154,14 @@ def addservice():
        
         existing_service = Service_Info.query.filter_by(service_name=servicename).first()
         if existing_service:
-            flash("Service already registered!")
+            flash("Service already registered!","info")
             return render_template('addservice.html')
         
         new_service = Service_Info(service_name=servicename, service_description=description, service_price=baseprice)
         try:
             db.session.add(new_service)
             db.session.commit()
-            flash("Service added successfully!")
+            flash("Service added successfully!","success")
 
             admin_email = session.get('admin_email')  
             
@@ -231,28 +229,25 @@ def edit_service(id):
     
     return redirect(url_for('admin_dashboard', admin_email=admin_email))
 
-@app.route('/professional/<int:id>/delete', methods=['POST', 'DELETE'])
-def delete_professional(id):
-    admin_email = session.get('admin_email')  
-    
-    if request.method in ['POST', 'DELETE']:
-        professional = Professional_Info.query.get_or_404(id)
-        
-        try:
-            db.session.delete(professional)
+@app.route('/unblock_professional/<int:id>', methods=['POST'])
+def unblock_professional(id):
+    admin_email = session.get('admin_email')
+    try:
+        professional = Professional_Info.query.get(id)
+        if professional:
+            professional.is_blocked = False 
             db.session.commit()
-            flash('Professional deleted successfully!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error deleting professional!', 'error')
-            print(f"Error deleting professional: {str(e)}")
-        
-        if admin_email:
-            return redirect(url_for('admin_dashboard', admin_email=admin_email))
+            flash(f"{professional.fullname} has been Unblocked!","primary")
         else:
-            return redirect(url_for('admin_dashboard'))  
+            flash("Professional not found.","danger")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {str(e)}","error")
+    
+    if admin_email:
+        return redirect(url_for('admin_dashboard', admin_email=admin_email))
     else:
-        return f"Method {request.method} not allowed for this endpoint", 405
+        return redirect(url_for('admin_dashboard'))  
 
 @app.route('/approve_professional/<int:id>', methods=['POST'])
 def approve_professional(id):
@@ -262,12 +257,12 @@ def approve_professional(id):
         if professional:
             professional.status = 'Approved'  
             db.session.commit()
-            flash(f"Professional {professional.fullname} has been approved!")
+            flash(f"{professional.fullname} has been approved!","success")
         else:
-            flash("Professional not found.")
+            flash("Professional not found.","danger")
     except Exception as e:
         db.session.rollback()
-        flash(f"An error occurred: {str(e)}")
+        flash(f"An error occurred: {str(e)}","error")
     
     if admin_email:
         return redirect(url_for('admin_dashboard', admin_email=admin_email))
@@ -282,12 +277,12 @@ def reject_professional(id):
         if professional:
             professional.status = 'Rejected'  
             db.session.commit()
-            flash(f"Professional {professional.fullname} has been rejected!")
+            flash(f"{professional.fullname} has been rejected!","success")
         else:
-            flash("Professional not found.")
+            flash("Professional not found.","danger")
     except Exception as e:
         db.session.rollback()
-        flash(f"An error occurred: {str(e)}")
+        flash(f"An error occurred: {str(e)}","error")
     
     if admin_email:
         return redirect(url_for('admin_dashboard', admin_email=admin_email))
@@ -295,19 +290,19 @@ def reject_professional(id):
         return redirect(url_for('admin_dashboard'))  
 
 @app.route('/block_professional/<int:id>', methods=['POST'])
-def block_user(id):
+def block_professional(id):
     admin_email = session.get('admin_email')
     try:
         professional = Professional_Info.query.get(id)
         if professional:
             professional.is_blocked = True  
             db.session.commit()
-            flash(f"User {professional.fullname} has been blocked!")
+            flash(f"{professional.fullname} has been blocked!","success")
         else:
-            flash("Professional not found.")
+            flash("Professional not found.","danger")
     except Exception as e:
         db.session.rollback()
-        flash(f"An error occurred: {str(e)}")
+        flash(f"An error occurred: {str(e)}","error")
     
     if admin_email:
         return redirect(url_for('admin_dashboard', admin_email=admin_email))
@@ -340,6 +335,20 @@ def customer_dashboard(customer_email=None):
     )
 
 
+def update_average_rating(professional_id):
+    professional = Professional_Info.query.get(professional_id)
+    if professional:  
+        all_ratings = [remark.rating for remark in professional.service_remarks]
+        
+        if all_ratings:
+            avg_rating = sum(all_ratings) / len(all_ratings)
+            professional.average_rating = round(avg_rating, 2) 
+        else:
+            professional.average_rating = None
+        
+        db.session.commit()
+
+
 @app.route('/servicedetails/<int:id>', methods=["GET", "POST"])
 def service_details(id):
     customer_email = session.get('customer_email')
@@ -362,7 +371,7 @@ def service_details(id):
         flash('Service name not available.', 'warning')
         return redirect(url_for('customer_dashboard'))
     
-    service_requests = Service_Request.query.filter_by(customer_id=customer.id).all()
+    service_requests = Service_Request.query.filter_by(customer_id=customer.id, service_id=service.id).all()
 
     professionals = Professional_Info.query.filter_by(service_name=service.service_name, is_blocked=False).all()
 
@@ -398,13 +407,20 @@ def book_service(service_id):
 
     if request.method == 'POST':
         selected_professional_id = request.form.get('professional_id')
+
+
+        if not selected_professional_id:
+            flash('Professional ID was not selected.', 'danger')
+            return redirect(url_for('customer_dashboard'))
+
+
         selected_professional = Professional_Info.query.get(selected_professional_id)
 
         if not selected_professional:
             flash('Selected professional not found.', 'danger')
             return redirect(url_for('customer_dashboard'))
 
-        
+
         new_request = Service_Request(
             service_id=service.id,
             customer_id=customer.id,
@@ -414,7 +430,6 @@ def book_service(service_id):
             date_of_request=datetime.now()
         )
 
-
         db.session.add(new_request)
         db.session.commit()
 
@@ -422,9 +437,6 @@ def book_service(service_id):
         return redirect(url_for('customer_dashboard', name=customer_email))
 
     return render_template('book_service.html', service=service, professionals=professionals)
-
-
-
 
 
 @app.route('/service_remarks/<int:service_request_id>', methods=['GET', 'POST'])
@@ -463,24 +475,24 @@ def add_service_remarks(service_request_id):
     professional_name = request.form.get('professional_name')
     professional_contact = request.form.get('professional_contact')
     rating = request.form.get('rating')
-    remarks = request.form.get('remarks',None)
+    remarks = request.form.get('remarks', None)
 
 
     if not all([service_name, service_date, professional_id, professional_name, professional_contact, rating]):
         flash('All fields are required.', 'danger')
-        return redirect(url_for('service_details', id=service_request_id))
+        return redirect(url_for('service_details', id=service_request.service_id))  
 
 
     try:
         service_date = datetime.strptime(service_date, '%d/%m/%Y')
     except ValueError:
         flash('Invalid date format. Please use dd/mm/yyyy.', 'danger')
-        return redirect(url_for('service_details', id=service_request_id))
+        return redirect(url_for('service_details', id=service_request.service_id))  
 
 
     try:
         new_remark = ServiceRemarks(
-            service_id=service_request_id,
+            service_id=service_request_id,  
             service_name=service_name,
             service_date=service_date,
             professional_id=professional_id,
@@ -497,13 +509,17 @@ def add_service_remarks(service_request_id):
         db.session.add(new_remark)
         db.session.commit()
 
+        update_average_rating(professional_id)
+
         flash('Service remarks added successfully!', 'success')
-        return redirect(url_for('service_details', id=service_request_id))
+        return redirect(url_for('service_details', id=service_request.service_id))  
 
     except Exception as e:
         db.session.rollback() 
         flash(f'An error occurred: {str(e)}', 'danger')
-        return redirect(url_for('service_details', id=service_request_id))
+        return redirect(url_for('service_details', id=service_request.service_id))  
+
+
 
 @app.route('/professional_dashboard')
 @app.route('/professional_dashboard/<string:professional_email>',  methods=["GET", "POST"])  
@@ -553,12 +569,12 @@ def approve_service(id):
         if service_request:
             service_request.service_status = 'Accepted'  
             db.session.commit()
-            flash(f"Service has been approved!")
+            flash(f"Service has been approved!","success")
         else:
-            flash("Service not found.")
+            flash("Service not found.","danger")
     except Exception as e:
         db.session.rollback()
-        flash(f"An error occurred: {str(e)}")
+        flash(f"An error occurred: {str(e)}","error")
     
     if professional_email:
         return redirect(url_for('professional_dashboard', professional_email=professional_email))
@@ -573,12 +589,12 @@ def reject_service(id):
         if service_request:
             service_request.service_status = 'Rejected'  
             db.session.commit()
-            flash(f"{service_request.fullname} has been approved!")
+            flash(f"{service_request.fullname} has been rejected!","info")
         else:
-            flash("Service not found.")
+            flash("Service not found.","danger")
     except Exception as e:
         db.session.rollback()
-        flash(f"An error occurred: {str(e)}")
+        flash(f"An error occurred: {str(e)}","error")
     
     if professional_email:
         return redirect(url_for('professional_dashboard', professional_email=professional_email))
@@ -672,7 +688,7 @@ def professional_profile():
         selected_service = Service_Info.query.filter_by(id=service_id).first()
 
         if not selected_service:
-            flash("Selected service is not valid!")
+            flash("Selected service is not valid!","warning")
             return render_template('service_professional_setup.html')
 
         if not all([email, cpassword, password, fullname, address, pincode, phone_number]):
@@ -823,8 +839,6 @@ def professional_search(session_email=None):
         closed_services=service_remarks,
     )
 
-
-
 @app.route('/customer_search')
 @app.route('/customer_search/<string:session_email>')
 def customer_search(session_email=None):
@@ -832,15 +846,19 @@ def customer_search(session_email=None):
     parameter = request.args.get('parameter')
     query = request.args.get('query')
 
+
     service_remarks = []
     services = []
     professionals = []
+    found_services = False
 
     if parameter == 'Services':
+        found_services = True
         services = Service_Info.query.filter(or_(
             Service_Info.service_name.ilike(f'%{query}%'),
             Service_Info.service_price.ilike(f'%{query}%')
         )).all()
+        
 
     elif parameter == 'Professional':
         professionals = Professional_Info.query.filter(or_(
@@ -848,24 +866,40 @@ def customer_search(session_email=None):
             Professional_Info.service_name.ilike(f'%{query}%'),
             Professional_Info.experience.ilike(f'%{query}%')
         )).all()
-    
+
+        if professionals:
+            services = Service_Info.query.filter(
+                Service_Info.service_name.in_([prof.service_name for prof in professionals])
+            ).all()
+
     elif parameter == 'Location':
         service_remarks = Professional_Info.query.filter(
             Professional_Info.address.ilike(f'%{query}%')
         ).all()
-    
+        if service_remarks:
+            services = Service_Info.query.filter(
+                Service_Info.service_name.in_([sr.service_name for sr in service_remarks])
+            ).all()
+
     elif parameter == 'Pin Code':
         service_remarks = Professional_Info.query.filter(
             Professional_Info.pincode.ilike(f'%{query}%')
-        ).all()  
+        ).all()
+        if service_remarks:
+            services = Service_Info.query.filter(
+                Service_Info.service_name.in_([sr.service_name for sr in service_remarks])
+            ).all()
 
     return render_template(
         'customersearch.html',
         name=session_email,
         closed_services=service_remarks,
         service_info=services,
-        professional_info=professionals
+        professional_info=professionals,
+        service=services[0] if services else None,
+        found_services = found_services
     )
+
 
 @app.route('/export_csv_professional_closed_request')
 def professional_export(session_email=None):
@@ -891,7 +925,7 @@ def professional_export(session_email=None):
             'Rating', 'Remarks', 'Customer Name', 'Customer Address', 'Customer Phone'
         ])
         for service in service_history:
-            service_request = service.service_request
+            service_request = service.service_request_info 
 
             customer = service_request.customer
 
@@ -935,7 +969,7 @@ def customer_export(session_email=None):
         ])
         
         for service in service_history:
-            service_request = service.service_request
+            service_request = service.service_request_info 
             customer = service_request.customer  
 
             writer.writerow([
@@ -972,11 +1006,11 @@ def professional_document(id):
             file_data = io.BytesIO(blob_data)
             return send_file(file_data, mimetype=mime_type) 
         else:
-            flash("Document not found.")
+            flash("Document not found.","danger")
             return redirect(url_for('admin_dashboard', email=admin_email))  
 
     except Exception as e:
-        flash(f"An error occurred: {str(e)}")
+        flash(f"An error occurred: {str(e)}","error")
         return redirect(url_for('admin_dashboard', email=admin_email))  
 
 
