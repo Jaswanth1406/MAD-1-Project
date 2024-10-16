@@ -17,7 +17,7 @@
           <a href="{{ url_for('customer_dashboard', customer_email=name) }}">Home</a>
           <a href="{{ url_for('customer_profile') }}">Profile</a>
           <a href="{{ url_for('customer_search', customer_email=name) }}">Search</a>
-          <a href="#">Summary</a>
+          <a href="{{ url_for('customer_summary', session_email=name) }}">Summary</a>
           <a href="/logout">Logout</a>
       </nav>
   </header>

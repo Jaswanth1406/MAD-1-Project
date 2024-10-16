@@ -16,7 +16,7 @@
             <a href="{{ url_for('professional_dashboard', professional_=name) }}">Home</a>
             <a href="{{ url_for('professional_profile') }}">Profile</a>
             <a href="{{ url_for('professional_search', professional_email=name) }}">Search</a>
-            <a href="#">Summary</a>
+            <a href="{{ url_for('professional_summary', session_email=name) }}">Summary</a>
             <a href="/logout">Logout</a>
         </nav>
     </header>

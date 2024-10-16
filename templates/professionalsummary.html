@@ -12,11 +12,13 @@
 <body>
     <div class="background"></div>
     <header class="header">
-        <h2 class="logo">Welcome {{ name }}</h2>  
+        <h2 class="logo">Welcome {{name}}</h2>  
+
         <nav class="navbar">
-            <a href="{{ url_for('admin_dashboard', admin_email=name) }}">Home</a>
-            <a href="{{ url_for('admin_search', admin_email=name) }}">Search</a>
-            <a href="{{ url_for('admin_summary', session_email=name) }}">Summary</a>
+            <a href="{{ url_for('professional_dashboard', professional_=name) }}">Home</a>
+            <a href="{{ url_for('professional_profile') }}">Profile</a>
+            <a href="{{ url_for('professional_search', professional_email=name) }}">Search</a>
+            <a href="{{ url_for('professional_summary', session_email=name) }}">Summary</a>
             <a href="/logout">Logout</a>
         </nav>
     </header>

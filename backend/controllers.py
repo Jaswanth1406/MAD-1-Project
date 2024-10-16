@@ -369,7 +369,7 @@ def service_details(id):
 
     if not service.service_name:
         flash('Service name not available.', 'warning')
-        return redirect(url_for('customer_dashboard'))
+        return redirect(url_for('customer_dashboard', name=customer_email))
     
     service_requests = Service_Request.query.filter_by(customer_id=customer.id, service_id=service.id).all()
 
@@ -377,7 +377,7 @@ def service_details(id):
 
     if not professionals:
         flash('No professionals available for this service', 'warning')
-        return redirect(url_for('customer_dashboard'))
+        return redirect(url_for('customer_dashboard', name=customer_email))
 
     return render_template('service_details.html', service=service, service_requests=service_requests, name=customer_email, professionals=professionals)
 
@@ -512,7 +512,7 @@ def add_service_remarks(service_request_id):
         update_average_rating(professional_id)
 
         flash('Service remarks added successfully!', 'success')
-        return redirect(url_for('service_details', id=service_request.service_id))  
+        return redirect(url_for('customer_dashboard', name=session_email))  
 
     except Exception as e:
         db.session.rollback() 
@@ -589,7 +589,7 @@ def reject_service(id):
         if service_request:
             service_request.service_status = 'Rejected'  
             db.session.commit()
-            flash(f"{service_request.fullname} has been rejected!","info")
+            flash("Service has been rejected!","info")
         else:
             flash("Service not found.","danger")
     except Exception as e:
@@ -1014,20 +1014,100 @@ def professional_document(id):
         return redirect(url_for('admin_dashboard', email=admin_email))  
 
 
+from collections import Counter
+
 @app.route('/admin_summary')
-@app.route('/admin_summary/<string:session_email>')
-def admin_summary(session_email=None):
+def admin_summary():
     session_email = session.get('admin_email')
+    
+
     service_remarks = ServiceRemarks.query.all()
     ratings = [service.rating for service in service_remarks]
+    
+
     rating_counts = Counter(ratings)
     labels = list(rating_counts.keys())  
-    data = list(rating_counts.values())  
+    data = list(rating_counts.values()) 
+
+    service_request = Service_Request.query.all()
+    statuses = [service.service_status for service in service_request]
+    
+
+    status_counts = Counter(statuses)
+    labels1 = list(status_counts.keys())
+    data1 = list(status_counts.values())
+    
 
     return render_template(
         'adminsummary.html',
-        name=session_email,
-        labels=labels,  
-        data=data  
+        name = session_email,
+        labels = labels,  
+        data = data,
+        labels1 = labels1,
+        data1 = data1
     )
 
+@app.route('/customer_summary')
+def customer_summary():
+    session_email = session.get('customer_email')
+    if not session_email:
+        flash("Customer Not Logged In", "danger")
+        return redirect(url_for('login'))
+
+    customer = Customer_Info.query.filter_by(email=session_email).first()
+    if not customer:
+        flash("Customer Not Found", "danger")
+
+
+    service_request = Service_Request.query.filter_by(customer_id=customer.id).all()
+
+
+    statuses = [service.service_status for service in service_request]
+    status_counts = Counter(statuses)
+    labels = list(status_counts.keys())
+    data = list(status_counts.values())
+
+    return render_template(
+        'customersummary.html',
+        name=session_email,
+        labels=labels,  
+        data=data,
+    )
+
+@app.route('/professional_summary')
+def professional_summary():
+    session_email = session.get('professional_email')
+    if not session_email:
+        flash("Professional Not Logged In", "danger")
+        return redirect(url_for('login'))
+    
+    professional = Professional_Info.query.filter_by(email=session_email).first()
+    if not professional:
+        flash("Professional Not Found", "danger")
+    
+
+    service_remarks = ServiceRemarks.query.filter_by(professional_id=professional.id).all()
+    ratings = [service.rating for service in service_remarks]
+    
+
+    rating_counts = Counter(ratings)
+    labels = list(rating_counts.keys())  
+    data = list(rating_counts.values()) 
+
+    service_request = Service_Request.query.filter_by(professional_id=professional.id).all()
+    statuses = [service.service_status for service in service_request]
+    
+
+    status_counts = Counter(statuses)
+    labels1 = list(status_counts.keys())
+    data1 = list(status_counts.values())
+    
+
+    return render_template(
+        'professionalsummary.html',
+        name = session_email,
+        labels = labels,  
+        data = data,
+        labels1 = labels1,
+        data1 = data1
+    )
