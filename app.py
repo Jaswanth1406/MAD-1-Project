@@ -35,12 +35,10 @@ class ServiceResource(Resource):
             return jsonify({
                 "id": service.id, 
                 "service_name": service.service_name, 
-                "service_description": service.service_description
+                "service_description": service.service_description,
+                "service_price": service.service_price
             })
         
-        services = Service_Info.query.all()
-        services_list = [{"id": svc.id, "service_name": svc.service_name, "description": svc.description} for svc in services]
-        return jsonify(services_list)
 
     def post(self):
         if not request.json or not 'service_name' in request.json:
@@ -49,7 +47,7 @@ class ServiceResource(Resource):
         try:
             new_service = Service_Info(
                 service_name=request.json.get('service_name'),
-                service_description=request.json.get('service_description', ''),
+                service_description=request.json.get('service_description', None),
                 service_price=request.json.get('service_price', 0)
             )
             db.session.add(new_service)
