@@ -15,7 +15,7 @@ class Customer_Info(db.Model):
     is_blocked = db.Column(db.Boolean, default=False)
 
     service_requests = db.relationship(
-        'Service_Request', backref='customer_info', cascade='all, delete-orphan' , overlaps="service_requests,customer_info"
+        'Service_Request', backref='customer_info', cascade='all, delete-orphan'
     )
 
 class Professional_Info(db.Model):
