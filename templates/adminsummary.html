@@ -10,57 +10,88 @@
 </head>
 
 <body>
-  <div class="background"></div>
-  <header class="header">
-      <h2 class="logo">Welcome {{ name }}</h2>  
-      <nav class="navbar">
-          <a href="{{ url_for('admin_dashboard', admin_email=name) }}">Home</a>
-          <a href="{{ url_for('admin_search', admin_email=name) }}">Search</a>
-          <a href="{{ url_for('admin_summary', session_email=name) }}">Summary</a>
-          <a href="/logout">Logout</a>
-      </nav>
-  </header>
+    <div class="background"></div>
+    <header class="header">
+        <h2 class="logo">Welcome {{ name }}</h2>  
+        <nav class="navbar">
+            <a href="{{ url_for('admin_dashboard', admin_email=name) }}">Home</a>
+            <a href="{{ url_for('admin_search', admin_email=name) }}">Search</a>
+            <a href="{{ url_for('admin_summary', session_email=name) }}">Summary</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }}" role="alert" style="position: absolute;top: 12%;width: 100%;">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert" style="position: absolute;top: 12%;width: 100%;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
 
+    <div class="container chart-container mt-5 pt-5">
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-5">
+                <canvas id="myChart"></canvas>
+            </div>
+            <div class="col-md-5">
+                <canvas id="myChart1"></canvas>
+            </div>
+        </div>
+    </div>
 
-  <div class="container chart-container">
-      <canvas id="myChart"></canvas>
-  </div>
+    <script>
+        const labels = JSON.parse(`{{ labels | tojson | safe }}`);  
+        const data = JSON.parse(`{{ data | tojson | safe }}`);      
 
-  <script>
-    const labels = JSON.parse(`{{ labels | tojson | safe }}`);  
-    const data = JSON.parse(`{{ data | tojson | safe }}`);      
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Number Of Ratings',
+                    data: data,
+                    borderWidth: 1,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',  
+                    borderColor: 'rgba(75, 192, 192, 1)'        
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
 
-    const ctx = document.getElementById('myChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Number Of Ratings',
-          data: data,
-          borderWidth: 1,
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',  
-          borderColor: 'rgba(75, 192, 192, 1)'        
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  </script>
+        const labels1 = JSON.parse(`{{ labels1 | tojson | safe }}`);  
+        const data1 = JSON.parse(`{{ data1 | tojson | safe }}`);      
+
+        const ctx1 = document.getElementById('myChart1').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels1,
+                datasets: [{
+                    label: 'Service Status',
+                    data: data1,
+                    borderWidth: 1,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',  
+                    borderColor: 'rgba(75, 192, 192, 1)'        
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
