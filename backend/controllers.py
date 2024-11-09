@@ -142,7 +142,8 @@ def admin_dashboard(admin_email=None):
     services = Service_Info.query.all()
     professional = Professional_Info.query.all()
     service_details = Service_Request.query.all()
-    return render_template('adminhome.html', name=admin_email, service_info=services, professional_info=professional  , service_request=service_details)
+    customer = Customer_Info.query.all()
+    return render_template('adminhome.html', name=admin_email, service_info=services, professional_info=professional  , service_request=service_details,customer_info = customer)
 
 
 @app.route('/addservice', methods=["GET", "POST"])
@@ -244,10 +245,9 @@ def unblock_professional(id):
         db.session.rollback()
         flash(f"An error occurred: {str(e)}","error")
     
-    if admin_email:
-        return redirect(url_for('admin_dashboard', admin_email=admin_email))
-    else:
-        return redirect(url_for('admin_dashboard'))  
+
+    return redirect(url_for('admin_dashboard', admin_email=admin_email))
+
 
 @app.route('/approve_professional/<int:id>', methods=['POST'])
 def approve_professional(id):
@@ -263,15 +263,15 @@ def approve_professional(id):
     except Exception as e:
         db.session.rollback()
         flash(f"An error occurred: {str(e)}","error")
-    
-    if admin_email:
-        return redirect(url_for('admin_dashboard', admin_email=admin_email))
-    else:
-        return redirect(url_for('admin_dashboard'))  
+
+    return redirect(url_for('admin_dashboard' , admin_email = admin_email))
 
 @app.route('/reject_professional/<int:id>', methods=['POST'])
 def reject_professional(id):
     admin_email = session.get('admin_email')
+    if not admin_email:  
+        flash("Admin email not found in session. Please log in again.", "warning")
+        return redirect(url_for('login'))  
     try:
         professional = Professional_Info.query.get(id)
         if professional:
@@ -284,14 +284,15 @@ def reject_professional(id):
         db.session.rollback()
         flash(f"An error occurred: {str(e)}","error")
     
-    if admin_email:
-        return redirect(url_for('admin_dashboard', admin_email=admin_email))
-    else:
-        return redirect(url_for('admin_dashboard'))  
+    return redirect(url_for('admin_dashboard', admin_email=admin_email))
+
 
 @app.route('/block_professional/<int:id>', methods=['POST'])
 def block_professional(id):
     admin_email = session.get('admin_email')
+    if not admin_email:  
+        flash("Admin email not found in session. Please log in again.", "warning")
+        return redirect(url_for('login'))  
     try:
         professional = Professional_Info.query.get(id)
         if professional:
@@ -304,10 +305,8 @@ def block_professional(id):
         db.session.rollback()
         flash(f"An error occurred: {str(e)}","error")
     
-    if admin_email:
-        return redirect(url_for('admin_dashboard', admin_email=admin_email))
-    else:
-        return redirect(url_for('admin_dashboard'))  
+    return redirect(url_for('admin_dashboard', admin_email=admin_email))
+
 
 
 @app.route('/customer_dashboard')
@@ -1111,3 +1110,47 @@ def professional_summary():
         labels1 = labels1,
         data1 = data1
     )
+@app.route('/unblock_customer/<int:id>', methods=['POST'])
+def unblock_customer(id):
+    admin_email = session.get('admin_email')
+    
+    if not admin_email:  
+        flash("Admin email not found in session. Please log in again.", "warning")
+        return redirect(url_for('login')) 
+
+    try:
+        customer = Customer_Info.query.get(id)
+        if customer:
+            customer.is_blocked = False 
+            db.session.commit()
+            flash(f"{customer.fullname} has been Unblocked!", "primary")
+        else:
+            flash("Customer not found.", "danger")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {str(e)}", "error")
+
+    return redirect(url_for('admin_dashboard', admin_email=admin_email))
+
+
+@app.route('/block_customer/<int:id>', methods=['POST'])
+def block_customer(id):
+    admin_email = session.get('admin_email')
+    
+    if not admin_email:  
+        flash("Admin email not found in session. Please log in again.", "warning")
+        return redirect(url_for('login'))  
+
+    try:
+        customer = Customer_Info.query.get(id)
+        if customer:
+            customer.is_blocked = True  
+            db.session.commit()
+            flash(f"{customer.fullname} has been blocked!", "success")
+        else:
+            flash("Customer not found.", "danger")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {str(e)}", "error")
+
+    return redirect(url_for('admin_dashboard', admin_email=admin_email))

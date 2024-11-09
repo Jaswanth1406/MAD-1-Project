@@ -1,7 +1,7 @@
-from flask import Flask, jsonify, request
+from flask import Flask
 from backend.models import *
 import secrets
-from flask_restful import Api, Resource, reqparse
+
 
 
 app = None

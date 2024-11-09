@@ -102,6 +102,33 @@
           </tbody>
         </table>
         <br></br>
+        <table class="table">
+          <h3>Customer</h3>
+          <thead>
+            <tr class="table-primary">
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for customer in customer_info %}
+            <tr>
+              <td>{{customer.id}}</td>
+              <td>{{customer.fullname}}</td>
+              <td>
+              <form action="{{ url_for('block_customer', id=customer.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-warning">Block</button>
+              </form>
+                <form action="{{ url_for('unblock_customer', id=customer.id) }}" method="POST" style="display: inline;">
+                  <button type="submit" class="btn btn-primary">UnBlock</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <br></br>
           <table class="table">
               <h3 class="t2hd">Service History</h3>
               <thead>
